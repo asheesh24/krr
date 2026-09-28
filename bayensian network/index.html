@@ -1,0 +1,881 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Bayesian Network - Student Performance Prediction</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background-color: #f4f7fb;
+            color: #222;
+        }
+
+        /* Navigation */
+        nav {
+            background: #172554;
+            color: white;
+            padding: 18px 8%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        nav h2 {
+            font-size: 22px;
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            gap: 25px;
+        }
+
+        nav ul li a {
+            color: white;
+            text-decoration: none;
+            font-size: 15px;
+        }
+
+        nav ul li a:hover {
+            color: #93c5fd;
+        }
+
+        /* Hero */
+        .hero {
+            min-height: 500px;
+            background: linear-gradient(135deg, #172554, #2563eb);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .hero-content {
+            max-width: 850px;
+        }
+
+        .hero h1 {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+
+        .hero p {
+            font-size: 20px;
+            line-height: 1.7;
+            margin-bottom: 30px;
+        }
+
+        .btn {
+            display: inline-block;
+            background: white;
+            color: #172554;
+            padding: 14px 28px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+        }
+
+        .btn:hover {
+            background: #dbeafe;
+        }
+
+        /* Sections */
+        section {
+            padding: 70px 8%;
+        }
+
+        .section-title {
+            text-align: center;
+            color: #172554;
+            font-size: 32px;
+            margin-bottom: 40px;
+        }
+
+        .about {
+            max-width: 1000px;
+            margin: auto;
+            line-height: 1.8;
+            font-size: 17px;
+            text-align: center;
+        }
+
+        /* Cards */
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 25px;
+            margin-top: 30px;
+        }
+
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+        }
+
+        .card h3 {
+            color: #2563eb;
+            margin-bottom: 15px;
+        }
+
+        .card p {
+            line-height: 1.6;
+        }
+
+        /* Network Diagram */
+        .network {
+            background: white;
+            max-width: 900px;
+            margin: auto;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+        }
+
+        .network-row {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+
+        .node {
+            background: #2563eb;
+            color: white;
+            padding: 18px 25px;
+            border-radius: 30px;
+            font-weight: bold;
+            min-width: 150px;
+            text-align: center;
+        }
+
+        .arrow {
+            text-align: center;
+            font-size: 30px;
+            color: #172554;
+        }
+
+        .prediction-node {
+            background: #16a34a;
+        }
+
+        /* Prediction */
+        .prediction-box {
+            max-width: 700px;
+            margin: auto;
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #172554;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 13px;
+            border: 1px solid #cbd5e1;
+            border-radius: 7px;
+            font-size: 15px;
+        }
+
+        .predict-btn {
+            width: 100%;
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 17px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .predict-btn:hover {
+            background: #1d4ed8;
+        }
+
+        #result {
+            display: none;
+            margin-top: 25px;
+            padding: 25px;
+            border-radius: 10px;
+            text-align: center;
+            background: #eff6ff;
+        }
+
+        #result h3 {
+            color: #172554;
+            margin-bottom: 10px;
+        }
+
+        .probability {
+            font-size: 30px;
+            font-weight: bold;
+            color: #16a34a;
+            margin: 10px;
+        }
+
+        /* Footer */
+        footer {
+            background: #172554;
+            color: white;
+            text-align: center;
+            padding: 30px;
+            line-height: 1.8;
+        }
+
+        /* Responsive */
+        @media (max-width: 800px) {
+            nav {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            nav ul {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .hero h1 {
+                font-size: 35px;
+            }
+
+            .cards {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Navigation -->
+    <nav>
+        <h2>Bayesian Student Predictor</h2>
+
+        <ul>
+            <li><a href="#home">Home</a></li>
+            <li><a href="#about">About</a></li>
+            <li><a href="#network">Network</a></li>
+            <li><a href="#predict">Predict</a></li>
+            <li><a href="#benefits">Benefits</a></li>
+        </ul>
+    </nav>
+
+
+    <!-- Hero Section -->
+    <section class="hero" id="home">
+        <div class="hero-content">
+
+            <h1>
+                Bayesian Network Model
+            </h1>
+
+            <p>
+                Predicting Student Performance Using Probabilistic
+                Artificial Intelligence
+            </p>
+
+            <p>
+                A Bayesian Network uses relationships between factors
+                such as attendance, study hours, previous marks and
+                assignment performance to estimate a student's expected
+                academic performance.
+            </p>
+
+            <a href="#predict" class="btn">
+                Predict Performance
+            </a>
+
+        </div>
+    </section>
+
+
+    <!-- About -->
+    <section id="about">
+
+        <h2 class="section-title">
+            What is a Bayesian Network?
+        </h2>
+
+        <div class="about">
+
+            <p>
+                A Bayesian Network is a probabilistic graphical model
+                that represents relationships between different
+                variables using nodes and directed connections.
+            </p>
+
+            <br>
+
+            <p>
+                In student performance prediction, variables such as
+                attendance, study hours, previous examination marks,
+                assignment scores and participation can be connected
+                to the final performance of a student.
+            </p>
+
+            <br>
+
+            <p>
+                The model uses probability to estimate the likelihood
+                of different performance levels based on the available
+                student information.
+            </p>
+
+        </div>
+
+    </section>
+
+
+    <!-- Features -->
+    <section>
+
+        <h2 class="section-title">
+            Factors Used in Prediction
+        </h2>
+
+        <div class="cards">
+
+            <div class="card">
+                <h3>📚 Study Hours</h3>
+
+                <p>
+                    The number of hours a student spends studying can
+                    influence the probability of achieving good academic
+                    performance.
+                </p>
+            </div>
+
+
+            <div class="card">
+                <h3>📅 Attendance</h3>
+
+                <p>
+                    Regular attendance provides students with more
+                    opportunities to attend lectures and understand
+                    course concepts.
+                </p>
+            </div>
+
+
+            <div class="card">
+                <h3>📝 Previous Marks</h3>
+
+                <p>
+                    Previous examination results can provide useful
+                    evidence about a student's expected performance.
+                </p>
+            </div>
+
+
+            <div class="card">
+                <h3>📖 Assignment Score</h3>
+
+                <p>
+                    Assignment performance can indicate the student's
+                    understanding and consistency.
+                </p>
+            </div>
+
+
+            <div class="card">
+                <h3>👨‍🏫 Participation</h3>
+
+                <p>
+                    Classroom participation can be considered as another
+                    factor related to academic performance.
+                </p>
+            </div>
+
+
+            <div class="card">
+                <h3>🎯 Final Performance</h3>
+
+                <p>
+                    The Bayesian Network combines evidence from different
+                    variables to estimate the student's performance.
+                </p>
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- Bayesian Network -->
+    <section id="network">
+
+        <h2 class="section-title">
+            Bayesian Network Model
+        </h2>
+
+        <div class="network">
+
+            <div class="network-row">
+
+                <div class="node">
+                    Attendance
+                </div>
+
+                <div class="node">
+                    Study Hours
+                </div>
+
+                <div class="node">
+                    Previous Marks
+                </div>
+
+            </div>
+
+            <div class="arrow">
+                ↓ &nbsp;&nbsp; ↓ &nbsp;&nbsp; ↓
+            </div>
+
+            <div class="network-row">
+
+                <div class="node">
+                    Academic Factors
+                </div>
+
+            </div>
+
+            <div class="arrow">
+                ↓
+            </div>
+
+            <div class="network-row">
+
+                <div class="node prediction-node">
+                    Student Performance
+                </div>
+
+            </div>
+
+            <p style="text-align:center; margin-top:25px; line-height:1.6;">
+
+                The input variables provide evidence to the Bayesian
+                Network. The network combines these factors to estimate
+                the probability of the student's final performance.
+
+            </p>
+
+        </div>
+
+    </section>
+
+
+    <!-- Prediction -->
+    <section id="predict">
+
+        <h2 class="section-title">
+            Student Performance Prediction
+        </h2>
+
+        <div class="prediction-box">
+
+            <div class="form-group">
+
+                <label for="attendance">
+                    Attendance (%)
+                </label>
+
+                <input
+                    type="number"
+                    id="attendance"
+                    min="0"
+                    max="100"
+                    placeholder="Enter attendance percentage"
+                >
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label for="study">
+                    Study Hours Per Day
+                </label>
+
+                <input
+                    type="number"
+                    id="study"
+                    min="0"
+                    max="24"
+                    step="0.5"
+                    placeholder="Enter study hours"
+                >
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label for="previous">
+                    Previous Exam Marks (%)
+                </label>
+
+                <input
+                    type="number"
+                    id="previous"
+                    min="0"
+                    max="100"
+                    placeholder="Enter previous marks"
+                >
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label for="assignment">
+                    Assignment Score (%)
+                </label>
+
+                <input
+                    type="number"
+                    id="assignment"
+                    min="0"
+                    max="100"
+                    placeholder="Enter assignment score"
+                >
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label for="participation">
+                    Class Participation
+                </label>
+
+                <select id="participation">
+
+                    <option value="">
+                        Select participation level
+                    </option>
+
+                    <option value="high">
+                        High
+                    </option>
+
+                    <option value="medium">
+                        Medium
+                    </option>
+
+                    <option value="low">
+                        Low
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <button
+                class="predict-btn"
+                onclick="predictPerformance()"
+            >
+                Predict Student Performance
+            </button>
+
+
+            <div id="result">
+
+                <h3>
+                    Prediction Result
+                </h3>
+
+                <p id="performance"></p>
+
+                <div
+                    class="probability"
+                    id="probability"
+                ></div>
+
+                <p id="message"></p>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- Benefits -->
+    <section id="benefits">
+
+        <h2 class="section-title">
+            Benefits of the Model
+        </h2>
+
+        <div class="cards">
+
+            <div class="card">
+                <h3>Early Prediction</h3>
+
+                <p>
+                    The model can help identify students who may require
+                    additional academic support.
+                </p>
+            </div>
+
+
+            <div class="card">
+                <h3>Data-Based Decision Making</h3>
+
+                <p>
+                    Teachers and institutions can use student data to
+                    understand performance-related factors.
+                </p>
+            </div>
+
+
+            <div class="card">
+                <h3>Risk Identification</h3>
+
+                <p>
+                    Students with low predicted performance can be
+                    identified for additional guidance.
+                </p>
+            </div>
+
+
+            <div class="card">
+                <h3>Personalized Support</h3>
+
+                <p>
+                    The results can help educators provide targeted
+                    academic assistance.
+                </p>
+            </div>
+
+
+            <div class="card">
+                <h3>Handles Uncertainty</h3>
+
+                <p>
+                    Bayesian Networks are useful when information is
+                    uncertain or incomplete.
+                </p>
+            </div>
+
+
+            <div class="card">
+                <h3>Easy Visualization</h3>
+
+                <p>
+                    Relationships between different student factors can
+                    be represented using a graphical network.
+                </p>
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- Conclusion -->
+    <section>
+
+        <h2 class="section-title">
+            Conclusion
+        </h2>
+
+        <div class="about">
+
+            <p>
+                A Bayesian Network provides a useful approach for
+                predicting student performance by combining different
+                academic and behavioral factors.
+            </p>
+
+            <br>
+
+            <p>
+                By considering attendance, study hours, previous marks,
+                assignment scores and participation, the model can
+                estimate the probability of different performance levels.
+            </p>
+
+        </div>
+
+    </section>
+
+
+    <!-- Footer -->
+    <footer>
+
+        <h3>
+            Bayesian Network Model for Predicting Student Performance
+        </h3>
+
+        <p>
+            Artificial Intelligence &nbsp; | &nbsp;
+            Machine Learning &nbsp; | &nbsp;
+            Knowledge Representation
+        </p>
+
+        <p>
+            © 2026 Student Performance Prediction Project
+        </p>
+
+    </footer>
+
+
+    <!-- JavaScript -->
+    <script>
+
+        function predictPerformance() {
+
+            let attendance =
+                parseFloat(document.getElementById("attendance").value);
+
+            let study =
+                parseFloat(document.getElementById("study").value);
+
+            let previous =
+                parseFloat(document.getElementById("previous").value);
+
+            let assignment =
+                parseFloat(document.getElementById("assignment").value);
+
+            let participation =
+                document.getElementById("participation").value;
+
+
+            // Validate input
+
+            if (
+                isNaN(attendance) ||
+                isNaN(study) ||
+                isNaN(previous) ||
+                isNaN(assignment) ||
+                participation === ""
+            ) {
+
+                alert("Please enter all student details.");
+
+                return;
+            }
+
+
+            // Convert participation to numerical value
+
+            let participationScore = 0;
+
+            if (participation === "high") {
+                participationScore = 100;
+            }
+
+            else if (participation === "medium") {
+                participationScore = 70;
+            }
+
+            else {
+                participationScore = 40;
+            }
+
+
+            /*
+                Weighted probability model.
+
+                This is a simplified demonstration of Bayesian-style
+                probabilistic prediction for the website.
+            */
+
+            let score =
+                (attendance * 0.20) +
+                ((study / 10) * 100 * 0.20) +
+                (previous * 0.25) +
+                (assignment * 0.20) +
+                (participationScore * 0.15);
+
+
+            // Keep score between 0 and 100
+
+            score = Math.max(0, Math.min(100, score));
+
+
+            let performance;
+            let message;
+
+
+            if (score >= 75) {
+
+                performance = "High Performance";
+
+                message =
+                    "The student has a high probability of achieving good academic performance.";
+
+            }
+
+            else if (score >= 50) {
+
+                performance = "Medium Performance";
+
+                message =
+                    "The student has a moderate probability of achieving good academic performance.";
+
+            }
+
+            else {
+
+                performance = "Low Performance";
+
+                message =
+                    "The student may require additional academic support.";
+
+            }
+
+
+            document.getElementById("performance").innerHTML =
+                "<strong>" + performance + "</strong>";
+
+            document.getElementById("probability").innerHTML =
+                score.toFixed(1) + "%";
+
+            document.getElementById("message").innerHTML =
+                message;
+
+
+            document.getElementById("result").style.display =
+                "block";
+
+        }
+
+    </script>
+
+</body>
+</html>
+```
